@@ -8,6 +8,7 @@
     "type": "git",
     "url": "git+https://github.com/SteveImmanuel/screen-translate.git"
   },
+  "type": "module",
   "author": "SteveImmanuel",
   "license": "ISC",
   "bugs": {
@@ -15,7 +16,10 @@
   },
   "homepage": "https://github.com/SteveImmanuel/screen-translate#readme",
   "dependencies": {
-    "electron": "^26.2.4"
+    "argparse": "^2.0.1",
+    "clipboardy": "^3.0.0",
+    "electron": "^26.2.4",
+    "playwright-firefox": "^1.38.1"
   },
   "devDependencies": {
     "@playwright/test": "^1.38.1",

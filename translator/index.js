@@ -1,78 +1,91 @@
-// const puppeteer = require('puppeteer');
+import argparse from 'argparse';
+import clipboard from 'clipboardy';
+import { firefox } from 'playwright-firefox';
+import fs from 'fs';
 
-// const startBrowser = async () => {
-//     const browser = await puppeteer.launch({
-//         headless: false,
-//         args: ['--disable-setuid-sandbox', '--no-sandbox'],
-//         ignoreHTTPSErrors: true,
-//         product: 'firefox',
-//     });
+const translateEmulate = async (imgPath, outPath = '', sourceLang = 'auto', targetLang = 'en') => {
+    if (!fs.existsSync(imgPath)) {
+        console.error('Input image does not exist');
+        process.exit(2);
+    }
 
-//     return browser;
-// };
+    let browser;
+    let context;
 
-// const translateEmulate = async (imgPath, sourceLang = 'auto', targetLang = 'en', timeout = 3000) => {
-//     let translatorBrowser;
+    let translatedText = '';
+    let translatedPath = '';
 
-//     if (targetLang === sourceLang) {
-//         return;
-//     }
+    try {
+        const oldClipboardContent = await clipboard.read();
 
-//     try {
-//         translatorBrowser = await startBrowser();
-//         let browserPage = await translatorBrowser.newPage();
-//         let success = true;
+        browser = await firefox.launch({
+            headless: false,
+            permissions: ['clipboard-read', 'clipboard-write'],
+        });
+        context = await browser.newContext();
+        const page = await context.newPage();
+        await page.goto(`https://translate.google.com/?sl=${sourceLang}&tl=${targetLang}&op=images`);
+        await page.waitForLoadState('domcontentloaded');
 
-//         await browserPage.setUserAgent('Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36')
+        await page.getByRole('textbox', { name: 'Browse your files' }).setInputFiles(imgPath);
 
-//         await browserPage.goto(
-//             `https://translate.google.com`,
-//             // `https://translate.google.com/?sl=${sourceLang}&tl=${targetLang}&op=images`,
-//             { waitUntil: 'load' },
-//         );
-//         console.log('ready')
+        // some happy coincidence this also waits for the translation to finish
+        // need to investigate further
+        await page.getByRole('button', { name: 'Copy text' }).click();
+        translatedText = await clipboard.read();
+        await clipboard.write(oldClipboardContent);
 
-//         // await browserPage.waitForSelector('input#ucj-28');
-//         // const uploadButton = await browserPage.$('input#ucj-28');
+        const regexPattern = /^blob:https:\/\/translate\.google\.com\/.*$/;
+        const matchingImages = page.locator('img').filter(async (img) => {
+            const srcAttribute = await img.getAttribute('src');
+            return regexPattern.test(srcAttribute);
+        });
 
-//         // const [fileChooser] = await Promise.all([
-//         //     browserPage.waitForFileChooser(),
-//         //     await uploadButton.evaluate(btn => btn.click()),
-//         // ]);
-//         // await fileChooser.accept([imgPath]);
-//         console.log('upload success')
-//         await browserPage.waitForTimeout(500000);
-//         await browserPage.close();
-//     } catch (error) {
-//         console.error(error);
-//     } finally {
-//         if (translatorBrowser) {
-//             await translatorBrowser.close();
-//         }
-//     }
-// };
+        const image = matchingImages.last();
+        const imageData = await image.evaluate(element => {
+            let cnv = document.createElement('canvas');
+            cnv.width = element.naturalWidth;
+            cnv.height = element.naturalHeight;
+            cnv.getContext('2d').drawImage(element, 0, 0, element.naturalWidth, element.naturalHeight);
+            return cnv.toDataURL().substring(22)
+        });
+        if (outPath === '') {
+            let filename = imgPath.split('/').pop().split('.').slice(0, -1).join('.');
+            if (process.platform === 'win32') {
+                outPath = `C:\\Users\\${process.env.USERNAME}\\AppData\\Local\\Temp\\${filename}_${targetLang}.png`;
+            } else {
+                outPath = `/tmp/${filename}_${targetLang}.png`;
+            }
+        }
+        fs.writeFileSync(outPath, imageData, 'base64');
+        translatedPath = outPath;
+    } catch (error) {
+        console.error(error);
+    } finally {
+        if (context) {
+            await context.close();
+        }
+        if (browser) {
+            await browser.close();
+        }
+    }
 
-// translateEmulate('/home/steve/Git/screen-translate/translator/a.png', sourceLang = 'kr')
+    if (translatedText === '' || translatedPath === '') {
+        process.exit(1);
+    }
+    return { translatedText, translatedPath };
+};
 
-const { firefox } = require('playwright');
+const parser = argparse.ArgumentParser({
+    description: 'Instantly translate an image and outputs the detected texts',
+});
+parser.add_argument('-i', { help: 'Path to the input image to translate', required: true });
+parser.add_argument('-o', { help: 'Path to the output image to save', required: false, default: '' });
+parser.add_argument('-sl', { help: 'Source language', required: false, default: 'auto' });
+parser.add_argument('-tl', { help: 'Target language', required: false, default: 'en' });
 
-(async () => {
-    const browser = await firefox.launch({
-        headless: false
-    });
-    const context = await browser.newContext();
-    const page = await context.newPage();
-    await page.goto('https://translate.google.com');
-
-    console.log('ready')
-    await page.getByRole('button', { name: 'Image translation' }).click();
-    await page.getByRole('main', { name: 'Image translation' }).locator('label').click();
-    await page.getByRole('textbox', { name: 'Browse your files' }).setInputFiles('/home/steve/Git/screen-translate/translator/a.png');
-
-    await new Promise(r => setTimeout(r, 100000));
-
-
-    // ---------------------
-    await context.close();
-    await browser.close();
-})();
+const args = parser.parse_args();
+translateEmulate(args.i, args.o, args.sl, args.tl).then(({ translatedText, translatedPath }) => {
+    console.log(translatedText);
+    console.log(translatedPath);
+});

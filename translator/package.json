@@ -3,9 +3,7 @@
   "version": "1.0.0",
   "description": "Auto translate image on screen",
   "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+  "scripts": {},
   "repository": {
     "type": "git",
     "url": "git+https://github.com/SteveImmanuel/screen-translate.git"
@@ -17,7 +15,10 @@
   },
   "homepage": "https://github.com/SteveImmanuel/screen-translate#readme",
   "dependencies": {
-    "electron": "^26.2.4",
-    "puppeteer": "^21.3.6"
+    "electron": "^26.2.4"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.38.1",
+    "@types/node": "^20.8.2"
   }
 }

@@ -19,8 +19,8 @@ class Screenshot(QMainWindow):
 
     def _setup_ui(self) -> None:
         self.setWindowFlags(QtCore.Qt.WindowType.Window | QtCore.Qt.WindowType.FramelessWindowHint)
-        self.setStyleSheet('background-color: white;')
-        self.setWindowOpacity(0.1)
+        # self.setStyleSheet('background-color: white;')
+        self.setWindowOpacity(0)
 
         width = QApplication.primaryScreen().size().width()
         height = QApplication.primaryScreen().size().height()
@@ -34,3 +34,17 @@ class Screenshot(QMainWindow):
             self.close()
             QApplication.restoreOverrideCursor()
             self.parent_window.show()
+        if event.key() == QtCore.Qt.Key.Key_A:
+            self.take_screenshot()
+
+    def take_screenshot(self):
+        print('taking screenshot')
+        screen = QApplication.primaryScreen()
+        print(self.hole.rectangle.tl.x, self.hole.rectangle.tl.y, self.hole.rectangle.br.x - self.hole.rectangle.tl.x,
+              self.hole.rectangle.br.y - self.hole.rectangle.tl.y)
+        # screenshot = screen.grabWindow(0, self.hole.rectangle.tl.x, self.hole.rectangle.tl.y,
+        #                                self.hole.rectangle.br.x - self.hole.rectangle.tl.x,
+        #                                self.hole.rectangle.br.y - self.hole.rectangle.tl.y)
+        screenshot = screen.grabWindow()
+        print(screenshot, screenshot.isNull(), screenshot.size())
+        screenshot.save('screenshot.png', 'png')

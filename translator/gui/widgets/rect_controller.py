@@ -138,5 +138,5 @@ class RectController(QWidget):
         self.btn_bl.setHidden(True)
         self.btn_br.setHidden(True)
 
-    def _get_sqr_dist(self, p1: QtCore.QPoint, p2: QtCore.QPoint) -> int:
+    def _sqr_dist(self, p1: QtCore.QPoint, p2: QtCore.QPoint) -> int:
         return (p1.x() - p2.x())**2 + (p1.y() - p2.y())**2

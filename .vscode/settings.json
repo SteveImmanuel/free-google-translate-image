@@ -1,7 +1,17 @@
 {
     "editor.rulers": [
-        100
+        120
     ],
+    // Add a comma after the previous property
     "editor.formatOnSave": true,
-    "editor.tabSize": 4
+    "editor.tabSize": 4,
+    "[python]": {
+        "editor.formatOnSaveMode": "file",
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "eeyore.yapf"
+    },
+    "yapf.args": [
+        "--style",
+        "{indent_width: 4, column_limit: 120}"
+    ]
 }

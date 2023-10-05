@@ -6,6 +6,7 @@ from PyQt6.QtCore import QThreadPool
 from PyQt6.QtWidgets import QMainWindow, QPushButton, QVBoxLayout
 
 from translator.gui.widgets import *
+from translator.gui.screenshot_window import Screenshot
 
 
 class MainWindow(QMainWindow):
@@ -38,6 +39,6 @@ class MainWindow(QMainWindow):
         self.ss_window = Screenshot(self)
         print(self.ss_window)
         self.ss_window.show()
-        self.ss_window.setScreen(QtGui.QGuiApplication.screens()[1])
+        self.ss_window.setScreen(QtGui.QGuiApplication.screens()[0])
         self.ss_window.showFullScreen()
         self.hide()

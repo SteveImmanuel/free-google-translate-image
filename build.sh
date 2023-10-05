@@ -1,4 +1,4 @@
 #!/bin/bash
 
 rm -rf dist build
-pyinstaller main.spec
+PLAYWRIGHT_BROWSERS_PATH=0 pyinstaller main.spec

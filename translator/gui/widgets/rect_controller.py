@@ -105,9 +105,9 @@ class RectController(QWidget):
         color = QtGui.QColor(0, 0, 0, 100)
 
         rect_top = QRect(QPoint(0, 0), QPoint(self.w, self.rectangle.tl.y))
-        rect_left = QRect(QPoint(self.rectangle.br.x, self.rectangle.tl.y), QPoint(self.w, self.rectangle.br.y))
         rect_bottom = QRect(QPoint(0, self.rectangle.br.y), QPoint(self.w, self.h))
-        rect_right = QRect(QPoint(0, self.rectangle.tl.y), QPoint(self.rectangle.tl.x, self.rectangle.br.y))
+        rect_left = QRect(QPoint(0, self.rectangle.tl.y + 1), QPoint(self.rectangle.bl.x, self.rectangle.br.y - 1))
+        rect_right = QRect(QPoint(self.rectangle.tr.x, self.rectangle.tr.y + 1), QPoint(self.w, self.rectangle.br.y - 1))
 
         qp.fillRect(rect_top, color)
         qp.fillRect(rect_bottom, color)

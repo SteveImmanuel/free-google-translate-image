@@ -1,8 +1,7 @@
 {
     "editor.rulers": [
-        120
+        130
     ],
-    // Add a comma after the previous property
     "editor.formatOnSave": true,
     "editor.tabSize": 4,
     "[python]": {
@@ -12,6 +11,6 @@
     },
     "yapf.args": [
         "--style",
-        "{indent_width: 4, column_limit: 120}"
+        "{indent_width: 4, column_limit: 130}"
     ]
 }

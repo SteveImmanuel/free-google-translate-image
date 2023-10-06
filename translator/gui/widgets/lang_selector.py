@@ -1,6 +1,8 @@
 import typing
+
 from PyQt6 import QtCore
-from PyQt6.QtWidgets import QComboBox, QWidget, QHBoxLayout
+from PyQt6.QtWidgets import QComboBox, QHBoxLayout, QWidget
+
 from translator.gui.const import LANG
 
 
@@ -14,7 +16,7 @@ class LangSelector(QWidget):
         self._source_lang = QComboBox()
         self._target_lang = QComboBox()
 
-        lang_list = list(map(lambda x: x.name, LANG))
+        lang_list = list(LANG.keys())
         self._source_lang.addItems(lang_list)
         self._target_lang.addItems(lang_list)
         self._target_lang.setCurrentIndex(1)
@@ -24,3 +26,11 @@ class LangSelector(QWidget):
         self._layout.addWidget(self._target_lang)
 
         self.setLayout(self._layout)
+
+    @property
+    def source_lang(self) -> str:
+        return LANG[self._source_lang.currentText()]
+
+    @property
+    def target_lang(self) -> str:
+        return LANG[self._target_lang.currentText()]

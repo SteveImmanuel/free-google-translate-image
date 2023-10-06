@@ -1,8 +1,10 @@
-from PyQt6 import QtCore, QtGui
-from PyQt6.QtGui import QKeyEvent, QMouseEvent, QPaintEvent, QRegion
-from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QWidget
+import tempfile
 
-from translator.gui.widgets import CircleButton, RectController
+from PyQt6 import QtCore, QtGui
+from PyQt6.QtGui import QKeyEvent
+from PyQt6.QtWidgets import QApplication, QMainWindow
+
+from translator.gui.widgets import RectController
 
 
 class Screenshot(QMainWindow):
@@ -35,16 +37,19 @@ class Screenshot(QMainWindow):
             QApplication.restoreOverrideCursor()
             self.parent_window.show()
         if event.key() == QtCore.Qt.Key.Key_A:
-            self.take_screenshot()
+            if self.hole.rectangle.is_valid():
+                self.take_screenshot('test.jpg')
+        if event.key() == QtCore.Qt.Key.Key_B:
+            print(self.screen())
+            print(QApplication.screens())
 
-    def take_screenshot(self):
-        print('taking screenshot')
+    def take_screenshot(self, outpath: str = '') -> str:
         screen = QApplication.primaryScreen()
-        print(self.hole.rectangle.tl.x, self.hole.rectangle.tl.y, self.hole.rectangle.br.x - self.hole.rectangle.tl.x,
-              self.hole.rectangle.br.y - self.hole.rectangle.tl.y)
-        # screenshot = screen.grabWindow(0, self.hole.rectangle.tl.x, self.hole.rectangle.tl.y,
-        #                                self.hole.rectangle.br.x - self.hole.rectangle.tl.x,
-        #                                self.hole.rectangle.br.y - self.hole.rectangle.tl.y)
-        screenshot = screen.grabWindow()
-        print(screenshot, screenshot.isNull(), screenshot.size())
-        screenshot.save('screenshot.png', 'png')
+        rect = self.hole.rectangle
+        screenshot = screen.grabWindow(0, rect.tl.x, rect.tl.y, rect.width, rect.height)
+        if outpath == '':
+            filename = tempfile.mktemp(suffix='.jpg')
+        else:
+            filename = outpath
+        screenshot.save(filename, 'jpg')
+        return filename

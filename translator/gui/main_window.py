@@ -29,25 +29,30 @@ class MainWindow(QMainWindow):
 
     def _setup_ui(self):
         self.setWindowTitle('Instant Screen Translator')
+        self.setMinimumSize(320, 240)
+        self.setMaximumSize(self.screen().size())
 
         self._lang_selector = LangSelector()
         self._btn_ss = QPushButton('Take Screenshot', self)
-        self._lbl_img = QLabel(INSTRUCTION, self)
-        self._lbl_img.setMinimumSize(320, 240)
+        self._lbl_text = QLabel(INSTRUCTION, self)
         self._progress_bar = QProgressBar(self)
+        self._img_viewer = ImageViewer()
+        # self._check_always_on_top = QCheckBox('Always on top', self)
+
         self._progress_bar.setMinimum(0)
         self._progress_bar.setMaximum(0)
         self._progress_bar.setHidden(True)
-
-        self._lbl_img.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        self._lbl_img.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+        self._progress_bar.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        self._img_viewer.setHidden(True)
+        self._lbl_text.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        self._lbl_text.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self._btn_ss.adjustSize()
-        # self._check_always_on_top = QCheckBox('Always on top', self)
 
         self._layout = QVBoxLayout()
         self._layout.addWidget(self._lang_selector)
         # self._layout.addWidget(self._check_always_on_top)
-        self._layout.addWidget(self._lbl_img)
+        self._layout.addWidget(self._img_viewer)
+        self._layout.addWidget(self._lbl_text)
         self._layout.addWidget(self._progress_bar)
         self._layout.addWidget(self._btn_ss)
         self._layout.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
@@ -62,17 +67,17 @@ class MainWindow(QMainWindow):
 
     def _on_translate_complete(self, translated_path: str, translated_text: str):
         logger.info(f'Translation complete: {translated_path}')
-        pixmap = QPixmap(translated_path)
-        self._lbl_img.setPixmap(pixmap)
-        self._lbl_img.setHidden(False)
+        self._img_viewer.load_image(translated_path)
+        self._img_viewer.setHidden(False)
+        # self._lbl_text.setHidden(False)
         self._progress_bar.setHidden(True)
         self._btn_ss.setDisabled(False)
+        self.setGeometry(self.x(), self.y(), self._img_viewer.get_img_width() + 100, self._img_viewer.get_img_height() + 150)
 
     def _on_translate_error(self, error: str):
         logger.error('Translation error: {error}')
-        self._lbl_img.setPixmap(QPixmap())
-        self._lbl_img.setText(error)
-        self._lbl_img.setHidden(False)
+        self._lbl_text.setText(error)
+        self._lbl_text.setHidden(False)
         self._progress_bar.setHidden(True)
         self._btn_ss.setDisabled(False)
 
@@ -81,8 +86,10 @@ class MainWindow(QMainWindow):
 
     def on_translate_ss(self, input_path: str):
         self._progress_bar.setHidden(False)
-        self._lbl_img.setHidden(True)
+        self._lbl_text.setHidden(True)
+        self._img_viewer.setHidden(True)
         self._btn_ss.setDisabled(True)
+        self.setGeometry(self.x(), self.y(), self.minimumWidth(), self.minimumHeight())
 
         worker = TranslateWorker(lambda: translate_emulate(
             input_path,

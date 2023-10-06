@@ -102,7 +102,7 @@ class RectController(QWidget):
 
     def _paint_hole(self):
         qp = QtGui.QPainter(self)
-        color = QtGui.QColor(0, 0, 0, 100)
+        color = QtGui.QColor(0, 0, 0, 180)
 
         rect_top = QRect(QPoint(0, 0), QPoint(self.w, self.rectangle.tl.y))
         rect_bottom = QRect(QPoint(0, self.rectangle.br.y), QPoint(self.w, self.h))

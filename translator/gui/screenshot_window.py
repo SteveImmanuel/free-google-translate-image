@@ -19,8 +19,8 @@ class Screenshot(QMainWindow):
 
     def _setup_ui(self) -> None:
         self.setWindowFlags(QtCore.Qt.WindowType.Window | QtCore.Qt.WindowType.FramelessWindowHint)
-        # self.setStyleSheet('background-color: white;')
-        self.setWindowOpacity(0)
+        self.setAttribute(QtCore.Qt.WidgetAttribute.WA_TranslucentBackground)
+        self.setStyleSheet('background-color: rgba(0, 0, 0, 0)')
 
         width = QApplication.primaryScreen().size().width()
         height = QApplication.primaryScreen().size().height()

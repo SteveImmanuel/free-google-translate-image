@@ -4,6 +4,7 @@ from PyQt6.QtGui import QKeyEvent, QMouseEvent, QPaintEvent, QRegion
 from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QWidget
 
 from translator.gui.widgets.circle_button import CircleButton
+from typing import Tuple
 
 
 class RectPoint(QPoint):
@@ -59,13 +60,16 @@ class Rectangle:
             self.tl, self.bl = self.bl, self.tl
             self.tr, self.br = self.br, self.tr
 
+    def get_hole_geom(self) -> Tuple[int, int, int, int]:
+        return (self.tl.x + 1, self.tl.y + 1, self.width - 2, self.height - 2)  # to compensate for the border
+
     @property
     def width(self):
-        return self.tr.x - self.tl.x
+        return self.tr.x - self.tl.x + 1
 
     @property
     def height(self):
-        return self.br.y - self.tr.y
+        return self.br.y - self.tr.y + 1
 
     def is_valid(self):
         # assume tl and br is guaranteed located correctly, i.e. update has been called
@@ -100,7 +104,7 @@ class RectController(QWidget):
 
             self.rectangle.tl.set_point(self.pos1)
             self.rectangle.br.set_point(self.pos2)
-            self._show_buttons()
+            self.show_buttons()
             self.update()
 
     def paintEvent(self, event: QPaintEvent) -> None:
@@ -140,13 +144,13 @@ class RectController(QWidget):
         self.btn_bl.move(self.rectangle.bl.x, self.rectangle.bl.y)
         self.btn_br.move(self.rectangle.br.x, self.rectangle.br.y)
 
-    def _show_buttons(self):
+    def show_buttons(self):
         self.btn_tl.setHidden(False)
         self.btn_tr.setHidden(False)
         self.btn_bl.setHidden(False)
         self.btn_br.setHidden(False)
 
-    def _hide_buttons(self):
+    def hide_buttons(self):
         self.btn_tl.setHidden(True)
         self.btn_tr.setHidden(True)
         self.btn_bl.setHidden(True)

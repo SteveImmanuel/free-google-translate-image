@@ -38,10 +38,10 @@ class CircleButton(QPushButton):
         self.y = y
         super().move(x - self.width() // 2, y - self.height() // 2)
 
-    def enterEvent(self, event: QEnterEvent) -> None:
-        QApplication.setOverrideCursor(QtGui.QCursor(self.cursor_type))
-        return super().enterEvent(event)
+    # def enterEvent(self, event: QEnterEvent) -> None:
+    #     QApplication.setOverrideCursor(QtGui.QCursor(self.cursor_type))
+    #     return super().enterEvent(event)
 
-    def leaveEvent(self, event: QEnterEvent) -> None:
-        QApplication.restoreOverrideCursor()
-        return super().leaveEvent(event)
+    # def leaveEvent(self, event: QEnterEvent) -> None:
+    #     QApplication.restoreOverrideCursor()
+    #     return super().leaveEvent(event)

@@ -18,8 +18,8 @@ class LangSelector(QWidget):
 
         lang_list = list(LANG.keys())
         self._source_lang.addItems(lang_list)
-        self._target_lang.addItems(lang_list)
-        self._target_lang.setCurrentIndex(1)
+        self._target_lang.addItems(lang_list[1:])
+        self._target_lang.setCurrentIndex(0)
 
         self._layout = QHBoxLayout()
         self._layout.addWidget(self._source_lang)

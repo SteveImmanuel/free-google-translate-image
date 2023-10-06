@@ -1,14 +1,20 @@
+import logging
 import typing
 
 from PyQt6 import QtCore, QtGui
 from PyQt6.QtCore import QThreadPool
-from PyQt6.QtWidgets import (QApplication, QMainWindow, QPushButton, QVBoxLayout, QWidget)
+from PyQt6.QtGui import QPixmap
+from PyQt6.QtWidgets import (QApplication, QCheckBox, QLabel, QMainWindow, QProgressBar, QPushButton, QSizePolicy, QVBoxLayout,
+                             QWidget)
 
 from translator.engine import translate_emulate
 from translator.gui.const import MAX_THREADS
 from translator.gui.screenshot_window import Screenshot
 from translator.gui.widgets import *
 from translator.gui.worker import TranslateWorker
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 class MainWindow(QMainWindow):
@@ -26,38 +32,68 @@ class MainWindow(QMainWindow):
 
         self._lang_selector = LangSelector()
         self._btn_ss = QPushButton('Take Screenshot', self)
+        self._lbl_img = QLabel('No result', self)
+        self._progress_bar = QProgressBar(self)
+        self._progress_bar.setMinimum(0)
+        self._progress_bar.setMaximum(0)
+        self._progress_bar.setHidden(True)
+
+        self._lbl_img.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        self._lbl_img.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self._btn_ss.adjustSize()
+        # self._check_always_on_top = QCheckBox('Always on top', self)
 
         self._layout = QVBoxLayout()
         self._layout.addWidget(self._lang_selector)
+        # self._layout.addWidget(self._check_always_on_top)
+        self._layout.addWidget(self._lbl_img)
+        self._layout.addWidget(self._progress_bar)
         self._layout.addWidget(self._btn_ss)
 
         self._btn_ss.clicked.connect(self.show_ss_window)
+        # self._check_always_on_top.toggled.connect(self._on_check_always_on_top)
 
         self._main_widget = QWidget()
         self._main_widget.setLayout(self._layout)
         self.setCentralWidget(self._main_widget)
 
+    def _on_translate_complete(self, translated_path: str, translated_text: str):
+        logger.info(f'Translation complete: {translated_path}')
+        pixmap = QPixmap(translated_path)
+        self._lbl_img.setPixmap(pixmap)
+        self._lbl_img.setHidden(False)
+        self._progress_bar.setHidden(True)
+        self._btn_ss.setDisabled(False)
+
+    def _on_translate_error(self, error: str):
+        logger.error('Translation error: {error}')
+        self._lbl_img.setPixmap(QPixmap())
+        self._lbl_img.setText(error)
+        self._lbl_img.setHidden(False)
+        self._progress_bar.setHidden(True)
+        self._btn_ss.setDisabled(False)
+
+    # def _on_check_always_on_top(self, checked: bool):
+    #     self.setWindowFlags(QtCore.Qt.WindowType.WindowStaysOnTopHint)
+
     def on_translate_ss(self, input_path: str):
+        self._progress_bar.setHidden(False)
+        self._lbl_img.setHidden(True)
+        self._btn_ss.setDisabled(True)
+
         worker = TranslateWorker(lambda: translate_emulate(
             input_path,
-            'out.png',
-            self._lang_selector.source_lang,
-            self._lang_selector.target_lang,
+            source_lang=self._lang_selector.source_lang,
+            target_lang=self._lang_selector.target_lang,
         ))
-        worker.signal.success.connect(self.on_translate_complete)
-        worker.signal.error.connect(self.on_translate_error)
-        print('starting worker')
+        worker.signal.success.connect(self._on_translate_complete)
+        worker.signal.error.connect(self._on_translate_error)
+        logger.info('Starting translation worker')
 
         QThreadPool.globalInstance().start(worker)
+        self.setWindowFlag
 
-    def on_translate_complete(self, translated_path: str, translated_text: str):
-        print(translated_path, translated_text)
-
-    def on_translate_error(self, error: str):
-        print(error)
-
-    def show_ss_window(self, a):
+    def show_ss_window(self):
         self.last_x = self.x()
         self.last_y = self.y()
         if self.ss_window is None:

@@ -43,7 +43,7 @@ class Screenshot(QMainWindow):
             self.close_window()
         if event.key() == QtCore.Qt.Key.Key_A:
             if self.hole.rectangle.is_valid():
-                ss_path = self.take_screenshot('test2.png')
+                ss_path = self.take_screenshot()
                 self.parent_window.on_translate_ss(ss_path)
                 self.close_window()
 

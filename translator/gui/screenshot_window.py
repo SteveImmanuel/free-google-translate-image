@@ -1,10 +1,13 @@
 import tempfile
 
-from PyQt6 import QtCore, QtGui
+from PyQt6 import QtCore, QtGui, QtTest
+from PyQt6.QtCore import QThreadPool
 from PyQt6.QtGui import QKeyEvent
 from PyQt6.QtWidgets import QApplication, QMainWindow
+
+from translator.engine import translate_emulate
 from translator.gui.widgets import RectController
-from PyQt6 import QtTest
+from translator.gui.worker import TranslateWorker
 
 
 class Screenshot(QMainWindow):
@@ -24,7 +27,7 @@ class Screenshot(QMainWindow):
         self.setAttribute(QtCore.Qt.WidgetAttribute.WA_TranslucentBackground)
         self.setStyleSheet('background-color: rgba(0, 0, 0, 0)')
 
-        screen = QApplication.primaryScreen()
+        screen = self.parent_window.screen()
         width = screen.size().width()
         height = screen.size().height()
         self.move(screen.geometry().x(), screen.geometry().y())
@@ -52,7 +55,7 @@ class Screenshot(QMainWindow):
 
     def take_screenshot(self, outpath: str = '') -> str:
 
-        screen = QApplication.primaryScreen()
+        screen = self.screen()
         rect = self.hole.rectangle
         self.hole.hide_buttons()
         QtTest.QTest.qWait(100)
@@ -64,4 +67,17 @@ class Screenshot(QMainWindow):
         else:
             filename = outpath
         screenshot.save(filename, 'png')
+
+        worker = TranslateWorker(lambda: translate_emulate(filename, 'out.png'))
+        worker.signal.success.connect(self.on_translate_complete)
+        worker.signal.error.connect(self.on_translate_error)
+        print('starting worker')
+        QThreadPool.globalInstance().start(worker)
+
         return filename
+
+    def on_translate_complete(self, translated_path: str, translated_text: str):
+        print(translated_path, translated_text)
+
+    def on_translate_error(self, error: str):
+        print(error)

@@ -3,8 +3,8 @@ import tempfile
 from PyQt6 import QtCore, QtGui
 from PyQt6.QtGui import QKeyEvent
 from PyQt6.QtWidgets import QApplication, QMainWindow
-
 from translator.gui.widgets import RectController
+from PyQt6 import QtTest
 
 
 class Screenshot(QMainWindow):
@@ -41,18 +41,27 @@ class Screenshot(QMainWindow):
             self.parent_window.show()
         if event.key() == QtCore.Qt.Key.Key_A:
             if self.hole.rectangle.is_valid():
-                self.take_screenshot('test.jpg')
+                self.take_screenshot('test2.png')
         if event.key() == QtCore.Qt.Key.Key_B:
             print(self.screen())
             print(QApplication.screens())
+        if event.key() == QtCore.Qt.Key.Key_C:
+            self.hole.hide_buttons()
+        if event.key() == QtCore.Qt.Key.Key_D:
+            self.hole.show_buttons()
 
     def take_screenshot(self, outpath: str = '') -> str:
+
         screen = QApplication.primaryScreen()
         rect = self.hole.rectangle
-        screenshot = screen.grabWindow(0, rect.tl.x, rect.tl.y, rect.width, rect.height)
+        self.hole.hide_buttons()
+        QtTest.QTest.qWait(100)
+        screenshot = screen.grabWindow(0, *rect.get_hole_geom())
+        self.hole.show_buttons()
+
         if outpath == '':
-            filename = tempfile.mktemp(suffix='.jpg')
+            filename = tempfile.mktemp(suffix='.png')
         else:
             filename = outpath
-        screenshot.save(filename, 'jpg')
+        screenshot.save(filename, 'png')
         return filename

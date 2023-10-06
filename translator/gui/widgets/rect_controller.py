@@ -59,6 +59,18 @@ class Rectangle:
             self.tl, self.bl = self.bl, self.tl
             self.tr, self.br = self.br, self.tr
 
+    @property
+    def width(self):
+        return self.tr.x - self.tl.x
+
+    @property
+    def height(self):
+        return self.br.y - self.tr.y
+
+    def is_valid(self):
+        # assume tl and br is guaranteed located correctly, i.e. update has been called
+        return not (self.tl.y == self.br.y or self.tl.x == self.br.x)
+
 
 class RectController(QWidget):
 
@@ -88,12 +100,12 @@ class RectController(QWidget):
 
             self.rectangle.tl.set_point(self.pos1)
             self.rectangle.br.set_point(self.pos2)
+            self._show_buttons()
             self.update()
 
     def paintEvent(self, event: QPaintEvent) -> None:
         self.rectangle.update()
         self._reposition_buttons()
-        self._show_buttons()
         self._paint_hole()
 
     def mouseReleaseEvent(self, event: QMouseEvent) -> None:
@@ -103,16 +115,18 @@ class RectController(QWidget):
     def _paint_hole(self):
         qp = QtGui.QPainter(self)
         color = QtGui.QColor(0, 0, 0, 180)
+        if not self.rectangle.is_valid():
+            qp.fillRect(QRect(QPoint(0, 0), QPoint(self.w, self.h)), color)
+        else:
+            rect_top = QRect(QPoint(0, 0), QPoint(self.w, self.rectangle.tr.y))
+            rect_bottom = QRect(QPoint(0, self.rectangle.bl.y), QPoint(self.w, self.h))
+            rect_left = QRect(QPoint(0, self.rectangle.tl.y + 1), QPoint(self.rectangle.bl.x, self.rectangle.br.y - 1))
+            rect_right = QRect(QPoint(self.rectangle.tr.x, self.rectangle.tr.y + 1), QPoint(self.w, self.rectangle.br.y - 1))
 
-        rect_top = QRect(QPoint(0, 0), QPoint(self.w, self.rectangle.tl.y))
-        rect_bottom = QRect(QPoint(0, self.rectangle.br.y), QPoint(self.w, self.h))
-        rect_left = QRect(QPoint(0, self.rectangle.tl.y + 1), QPoint(self.rectangle.bl.x, self.rectangle.br.y - 1))
-        rect_right = QRect(QPoint(self.rectangle.tr.x, self.rectangle.tr.y + 1), QPoint(self.w, self.rectangle.br.y - 1))
-
-        qp.fillRect(rect_top, color)
-        qp.fillRect(rect_bottom, color)
-        qp.fillRect(rect_left, color)
-        qp.fillRect(rect_right, color)
+            qp.fillRect(rect_top, color)
+            qp.fillRect(rect_bottom, color)
+            qp.fillRect(rect_left, color)
+            qp.fillRect(rect_right, color)
 
     def _setup_ui(self):
         self.btn_tl = CircleButton(QtCore.Qt.CursorShape.SizeFDiagCursor, self)

@@ -15,6 +15,8 @@ class LangSelector(QWidget):
     def _setup_ui(self) -> None:
         self._source_lang = QComboBox()
         self._target_lang = QComboBox()
+        self._source_lang.setFocusPolicy(QtCore.Qt.FocusPolicy.NoFocus)
+        self._target_lang.setFocusPolicy(QtCore.Qt.FocusPolicy.NoFocus)
 
         lang_list = list(LANG.keys())
         self._source_lang.addItems(lang_list)

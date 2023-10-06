@@ -16,6 +16,7 @@ class Screenshot(QMainWindow):
         self._setup_ui()
 
     def show(self) -> None:
+        self.setFocus()
         screen = self.parent_window.screen()
         width = screen.size().width()
         height = screen.size().height()

@@ -3,12 +3,12 @@ import typing
 
 from PyQt6 import QtCore, QtGui
 from PyQt6.QtCore import QThreadPool
-from PyQt6.QtGui import QPixmap
+from PyQt6.QtGui import QPixmap, QKeyEvent
 from PyQt6.QtWidgets import (QApplication, QCheckBox, QLabel, QMainWindow, QProgressBar, QPushButton, QSizePolicy, QVBoxLayout,
-                             QWidget)
+                             QWidget, QComboBox)
 
 from translator.engine import translate_emulate
-from translator.gui.const import MAX_THREADS
+from translator.gui.const import MAX_THREADS, INSTRUCTION
 from translator.gui.screenshot_window import Screenshot
 from translator.gui.widgets import *
 from translator.gui.worker import TranslateWorker
@@ -32,7 +32,8 @@ class MainWindow(QMainWindow):
 
         self._lang_selector = LangSelector()
         self._btn_ss = QPushButton('Take Screenshot', self)
-        self._lbl_img = QLabel('No result', self)
+        self._lbl_img = QLabel(INSTRUCTION, self)
+        self._lbl_img.setMinimumSize(320, 240)
         self._progress_bar = QProgressBar(self)
         self._progress_bar.setMinimum(0)
         self._progress_bar.setMaximum(0)
@@ -49,6 +50,7 @@ class MainWindow(QMainWindow):
         self._layout.addWidget(self._lbl_img)
         self._layout.addWidget(self._progress_bar)
         self._layout.addWidget(self._btn_ss)
+        self._layout.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
 
         self._btn_ss.clicked.connect(self.show_ss_window)
         # self._check_always_on_top.toggled.connect(self._on_check_always_on_top)
@@ -56,6 +58,7 @@ class MainWindow(QMainWindow):
         self._main_widget = QWidget()
         self._main_widget.setLayout(self._layout)
         self.setCentralWidget(self._main_widget)
+        self.setFocusPolicy(QtCore.Qt.FocusPolicy.StrongFocus)
 
     def _on_translate_complete(self, translated_path: str, translated_text: str):
         logger.info(f'Translation complete: {translated_path}')
@@ -91,7 +94,10 @@ class MainWindow(QMainWindow):
         logger.info('Starting translation worker')
 
         QThreadPool.globalInstance().start(worker)
-        self.setWindowFlag
+
+    def keyPressEvent(self, event: QKeyEvent) -> None:
+        if event.key() == QtCore.Qt.Key.Key_X and event.modifiers() == QtCore.Qt.KeyboardModifier.ShiftModifier:
+            self.show_ss_window()
 
     def show_ss_window(self):
         self.last_x = self.x()
@@ -102,6 +108,7 @@ class MainWindow(QMainWindow):
         self.hide()
 
     def show(self) -> None:
+        self.setFocus()
         if self.last_x and self.last_y:
             self.move(self.last_x, self.last_y)
         QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.CursorShape.ArrowCursor))

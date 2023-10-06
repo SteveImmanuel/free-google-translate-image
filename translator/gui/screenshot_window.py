@@ -41,7 +41,7 @@ class Screenshot(QMainWindow):
     def keyPressEvent(self, event: QKeyEvent) -> None:
         if event.key() == QtCore.Qt.Key.Key_Escape:
             self.close_window()
-        if event.key() == QtCore.Qt.Key.Key_A:
+        if event.key() == QtCore.Qt.Key.Key_Space:
             if self.hole.rectangle.is_valid():
                 ss_path = self.take_screenshot()
                 self.parent_window.on_translate_ss(ss_path)

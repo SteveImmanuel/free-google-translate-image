@@ -20,13 +20,16 @@ class Screenshot(QMainWindow):
         return super().show()
 
     def _setup_ui(self) -> None:
-        self.setWindowFlags(QtCore.Qt.WindowType.Window | QtCore.Qt.WindowType.FramelessWindowHint)
+        self.setWindowFlags(QtCore.Qt.WindowType.FramelessWindowHint)
         self.setAttribute(QtCore.Qt.WidgetAttribute.WA_TranslucentBackground)
         self.setStyleSheet('background-color: rgba(0, 0, 0, 0)')
 
-        width = QApplication.primaryScreen().size().width()
-        height = QApplication.primaryScreen().size().height()
+        screen = QApplication.primaryScreen()
+        width = screen.size().width()
+        height = screen.size().height()
+        self.move(screen.geometry().x(), screen.geometry().y())
         self.setFixedSize(width, height)
+        self.showFullScreen()
 
         self.hole = RectController(width, height)
         self.setCentralWidget(self.hole)

@@ -1,9 +1,9 @@
 from multiprocessing import cpu_count
 import typing
-from PyQt6 import QtGui
+from PyQt6 import QtGui, QtCore
 
 from PyQt6.QtCore import QThreadPool
-from PyQt6.QtWidgets import QMainWindow, QPushButton, QVBoxLayout
+from PyQt6.QtWidgets import QMainWindow, QPushButton, QVBoxLayout, QApplication
 
 from translator.gui.widgets import *
 from translator.gui.screenshot_window import Screenshot
@@ -37,8 +37,9 @@ class MainWindow(QMainWindow):
 
     def show_ss_window(self, a):
         self.ss_window = Screenshot(self)
-        print(self.ss_window)
         self.ss_window.show()
-        self.ss_window.setScreen(QtGui.QGuiApplication.screens()[0])
-        self.ss_window.showFullScreen()
         self.hide()
+
+    def show(self) -> None:
+        QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.CursorShape.ArrowCursor))
+        return super().show()

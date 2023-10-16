@@ -31,9 +31,9 @@ class ImageViewer(QWidget):
         self._view.setScene(self._scene)
 
         self._image_item = QGraphicsPixmapItem()
-        self._image_item.setFlags(QGraphicsPixmapItem.GraphicsItemFlag.ItemIsMovable)
         self._scene.addItem(self._image_item)
         self._scene.setBackgroundBrush(QBrush(QColor(0, 0, 0, 20)))
+        self._view.setDragMode(QGraphicsView.DragMode.ScrollHandDrag)
 
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 
@@ -46,6 +46,7 @@ class ImageViewer(QWidget):
         self._image_item.setPixmap(self.pixmap)
 
         self._view.setSceneRect(0, 0, self.pixmap.width(), self.pixmap.height())
+        self._image_item.resetTransform()
         self._view.resetTransform()
         self._view.centerOn(self._image_item)
 
@@ -62,13 +63,11 @@ class ImageViewer(QWidget):
     def _zoom_in(self):
         self._view.setRenderHint(QPainter.RenderHint.Antialiasing)
         self._view.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform)
-
         self._view.scale(ZOOM_FACTOR, ZOOM_FACTOR)
 
     def _zoom_out(self):
         self._view.setRenderHint(QPainter.RenderHint.Antialiasing)
         self._view.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform)
-
         self._view.scale(1 / ZOOM_FACTOR, 1 / ZOOM_FACTOR)
 
     def wheelEvent(self, event: QWheelEvent) -> None:
